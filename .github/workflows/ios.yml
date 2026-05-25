@@ -1,0 +1,44 @@
+name: Build iOS
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Mindustry
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Clone Arc
+        run: |
+          cd ..
+          git clone https://github.com/Anuken/Arc
+
+      - name: Build Arc natives
+        run: |
+          cd ../Arc
+          ./gradlew natives
+
+      - name: Build Mindustry assets
+        run: |
+          ./gradlew pack
+
+      - name: Build iOS IPA
+        run: |
+          ./gradlew :ios:deploy -Probovm.iosSkipSigning=true
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: mindustry-ios
+          path: ios/build/robovm/*.ipa
