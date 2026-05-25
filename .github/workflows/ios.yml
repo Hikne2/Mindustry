@@ -27,7 +27,7 @@ jobs:
       - name: Build Arc natives
         run: |
           cd ../Arc
-          ./gradlew natives
+          ./gradlew arc-core:natives arc-freetype:natives
 
       - name: Build Mindustry assets
         run: |
