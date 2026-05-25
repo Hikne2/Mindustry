@@ -8,51 +8,32 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      # 1. Checkout repo (with submodules just in case)
-      - name: Checkout repository
+      - name: Checkout Mindustry
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      # 2. Set up correct Java version (MANDATORY)
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      # 3. Cache Gradle (speeds up future builds)
-      - name: Cache Gradle
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            gradle-${{ runner.os }}-
-
-      # 4. Make Gradle executable
-      - name: Grant execute permission
+      - name: Make Gradle executable
         run: chmod +x gradlew
 
-      # 5. Print Gradle version (debug safety)
-      - name: Check Gradle
-        run: ./gradlew --version
+      # 🔥 THIS IS THE MISSING PIECE
+      - name: Clone Arc (required dependency)
+        run: |
+          cd ..
+          git clone https://github.com/Anuken/Arc.git Arc
 
-      # 6. Build assets (textures, etc.)
       - name: Pack assets
         run: ./gradlew pack
 
-      # 7. Build iOS IPA (NO signing)
-      - name: Build iOS
+      - name: Build iOS IPA
         run: ./gradlew :ios:deploy -Probovm.iosSkipSigning=true
 
-      # 8. Find IPA output safely
-      - name: Locate IPA
-        run: find . -name "*.ipa" || true
-
-      # 9. Upload IPA artifact
       - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
